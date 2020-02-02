@@ -1,88 +1,47 @@
-// Libraries 
+#include <SoftwareSerial.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 
-
-
+// rx, tx
+SoftwareSerial NodeMCU(D2,D3);
 
 const char* ssid="hattarki_2.4";
-
 const char* password = "SH9423570289";
+String ip = "myids.com"; // address resolved to ip
+// change ip in c://windows/system32/drivers/etc/hosts
 
-
-
-//int ledPin = 13;
-
-
-
-void setup() {
-
+void setup(){
+	
+	Serial.begin(9600);
+	NodeMCU.begin(4800);
+  pinMode(D2,INPUT);
+  pinMode(D3,OUTPUT);
   
-
-//  pinMode(ledPin,OUTPUT);
-
-//  digitalWrite(ledPin,LOW);
-
-
-
-  Serial.begin(9600);
-
-  Serial.println();
-
   Serial.print("Wifi connecting to ");
-
   Serial.println( ssid );
-
-
-
   WiFi.begin(ssid,password);
-
-
-
   Serial.println();
-
   Serial.print("Connecting");
-
-
-
   while( WiFi.status() != WL_CONNECTED ){
-
       delay(500);
-
       Serial.print(".");        
-
   }
-
-
-
-//  digitalWrite( ledPin , HIGH);
-
   Serial.println();
-
-
-
   Serial.println("Wifi Connected Success!");
-
   Serial.print("NodeMCU IP Address : ");
-
   Serial.println(WiFi.localIP() );
-
-  delay(1000);
   Serial.println("");
-  Serial.println("Sending message to server espcomm");
+  Serial.println("Sending Hello message to server " + ip);
   delay(1000);
-  int res=sendmessage("Hello");
+  int res = sendmessage("Hello");
   delay(1000);
-  if (res==1)
-  {
+  if (res==1) {
     Serial.println("Send Successfully");
-  }
-  else
-  {
+  } else { 
     Serial.println("Error on Server side or client side.");
   }
-
 }
+
 
 int sendmessage(String d)
 {
@@ -91,19 +50,17 @@ int sendmessage(String d)
   if (WiFi.status()==WL_CONNECTED)
   {
     HTTPClient http;
-    String url="http://192.168.0.101/ids/server.php?data="+d;
+    String url="http://" + ip + "/ids/server.php?data="+d;
     http.begin(url);
     http.addHeader("Content-Type","text/plain");
     int httpCode=http.GET();
     String payload=http.getString();
     Serial.println("While sending I received this from server : "+payload);
-    if (payload=="SUCCESS. Data written in file.")
-    {
+    if (payload=="SUCCESS. Data written in file."){
       sres=1;
-    }
-    else
-    {
+    } else {
       sres=0;
+      Serial.println("wrong or no payload!");
     }
     http.end();
     net=1;
@@ -116,25 +73,21 @@ int sendmessage(String d)
   return (net && sres);
 }
 
-int COUNT = 0;
 
-void loop() {
-
-  // put your main code here, to run repeatedly:
-  delay(1000);
-  Serial.println("");
-  Serial.println("Sending message to server espcomm");
-  delay(1000);
-  int res=sendmessage("Hello" + String(COUNT++));
-  delay(1000);
-  if (res==1)
-  {
-    Serial.println("Send Successfully");
-  }
-  else
-  {
-    Serial.println("Error on Server side or client side.");
-  }
-
-
+void loop(){
+	
+	while(NodeMCU.available()>0){
+	float val = NodeMCU.parseFloat();
+	if(NodeMCU.read()== '\n'){
+    Serial.print("revd: ");
+	  Serial.println(val);
+    int res = sendmessage(String(val));
+    if (res==1) {
+      Serial.println("Send Successfully");
+    } else { 
+      Serial.println("Error on Server side or client side.");
+    }
+	}
+}
+delay(100);
 }
