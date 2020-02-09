@@ -7,8 +7,7 @@ SoftwareSerial NodeMCU(D2,D3);
 
 const char* ssid="hattarki_2.4";
 const char* password = "SH9423570289";
-String ip = "myids.com"; // address resolved to ip
-// change ip in c://windows/system32/drivers/etc/hosts
+String ip = "192.168.0.104";
 
 void setup(){
 	
