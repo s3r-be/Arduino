@@ -5,9 +5,9 @@
 // rx, tx
 SoftwareSerial NodeMCU(D2,D3);
 
-const char* ssid="hattarki_2.4";
-const char* password = "SH9423570289";
-String ip = "192.168.0.104";
+const char* ssid="moto_hotspot";
+const char* password = "ggg333444";
+String ip = "192.168.0.121";
 
 void setup(){
 	
